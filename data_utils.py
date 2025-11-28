@@ -3,33 +3,29 @@ import pandas as pd
 import torch
 from torch.utils.data import Dataset
 
-def generate_industrial_data(length=1000, noise_level=0.5):
+def generate_industrial_data(length=1000, noise_level=0.1):
     """
     Generates synthetic industrial sensor data.
+    noise_level: 0.1 for Training (Clean), 0.5+ for Inference (Real-world)
     """
     t = np.linspace(0, 100, length)
     
-    # 1. Temperature (deg C): Slow sine wave + Base 80
-    # Normal range: ~70 to 90
+    # 1. Temperature (deg C): Slow sine wave + trend
     temp = 80 + 10 * np.sin(t / 5) 
     
-    # 2. Pressure (PSI): Constant base 100 + High freq noise
-    # Normal range: ~95 to 105
-    pressure = 100 + np.random.normal(0, 1.5, length)
+    # 2. Pressure (PSI): Constant base + Fast noise
+    pressure = 100 + np.random.normal(0, 0.5, length)
     
-    # 3. Torque (Nm): Faster sine wave + Base 50
-    # Normal range: ~30 to 70
+    # 3. Torque (Nm): Faster sine wave
     torque = 50 + 20 * np.sin(t) 
 
-    # Combine
+    # Stack features
     data = np.stack([temp, pressure, torque], axis=1)
     
-    # Add general sensor noise
+    # Add Sensor Noise
     data += np.random.normal(0, noise_level, data.shape)
     
-    # Create DataFrame
     df = pd.DataFrame(data, columns=['Temperature', 'Pressure', 'Torque'])
-    
     return df
 
 def save_to_excel(df, filename='sensor_data.xlsx'):
